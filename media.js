@@ -12,7 +12,7 @@
     video.load();
   };
   function playPreview(video) {
-    const wanted = onHome() && previews.get(video).visible && !document.hidden && !reduced.matches;
+    const wanted = onHome() && previews.get(video).visible && !document.hidden && !document.querySelector('.media-viewer[open]') && !reduced.matches;
     if (!wanted) { video.pause(); return; }
     if (!video.getAttribute('src')) {
       video.muted = true;
@@ -30,14 +30,14 @@
   for (const [video] of previews) previewObserver.observe(video);
 
   function updateDemos() {
-    const candidates = onHome() || document.hidden || reduced.matches ? [] : [...demos]
+    const candidates = onHome() || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
       .filter(([video,visible]) => visible && video.isConnected)
       .sort(([a],[b]) => Math.abs(a.getBoundingClientRect().top+a.clientHeight/2-innerHeight/2)-Math.abs(b.getBoundingClientRect().top+b.clientHeight/2-innerHeight/2))
-      .slice(0,2).map(([video])=>video);
+      .slice(0,1).map(([video])=>video);
     // Release old requests before starting at most two nearby examples.
-    for(const [video] of demos) if(!candidates.includes(video)&&video.hasAttribute('src')) release(video);
+    for(const [video] of demos) if(!candidates.includes(video)) video.pause();
     for(const video of candidates){
-      if (!video.hasAttribute('src')) { video.muted=true;video.src=video.dataset.demo; }
+      if (!video.hasAttribute('src')) { video.muted=true;video.preload='auto';video.src=video.dataset.demo; }
       video.play().catch(()=>{});
     }
   }
@@ -143,7 +143,7 @@
           if(!isOriginal){
             let ahead=0;
             for(let i=0;i<video.buffered.length;i++)if(video.buffered.start(i)<=position+.2&&video.buffered.end(i)>position)ahead=video.buffered.end(i)-position;
-            const needed=Number.isFinite(video.duration)?Math.min(4,Math.max(.1,video.duration-position-.1)):4;
+            const needed=Number.isFinite(video.duration)?Math.min(1.5,Math.max(.1,video.duration-position-.1)):1.5;
             if(ahead<needed)return;
           }
           pendingPlay=false;
@@ -200,7 +200,7 @@
         if(demos.has(entry.target)) demos.set(entry.target,entry.isIntersecting);
       }
       updateDemos();
-    }, {rootMargin:'120px 0px',threshold:[0,.5,1]});
+    }, {rootMargin:'0px',threshold:[0,.25,.5,1]});
     for (const video of document.querySelectorAll('.detail-demo')) {
       demos.set(video,false);
       demoObserver.observe(video);
@@ -213,6 +213,7 @@
   }
   addEventListener('hashchange',routeMedia);
   document.addEventListener('visibilitychange',visibility);
+  document.addEventListener('viewerchange',visibility);
   reduced.addEventListener('change',visibility);
   routeMedia();
 })();
