@@ -1,5 +1,5 @@
 (() => {
-  const previews = new Map([...document.querySelectorAll('.project-preview')].map(video => [video, {visible:false}]));
+  const previews = new Map([...document.querySelectorAll('.project-preview')].map(video => [video, {visible:false,engaged:false}]));
   const players = new Map(), demos = new Map();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const onHome = () => !document.querySelector('#home-page').hidden;
@@ -12,7 +12,7 @@
     video.load();
   };
   function playPreview(video) {
-    const wanted = onHome() && previews.get(video).visible && !document.hidden && !document.querySelector('.media-viewer[open]') && !reduced.matches;
+    const wanted = onHome() && previews.get(video).visible && previews.get(video).engaged && !document.hidden && !document.querySelector('.media-viewer[open]') && !reduced.matches;
     if (!wanted) { video.pause(); return; }
     if (!video.getAttribute('src')) {
       video.muted = true;
@@ -27,7 +27,16 @@
       playPreview(entry.target);
     }
   }, {rootMargin:'120px 0px'});
-  for (const [video] of previews) previewObserver.observe(video);
+  for (const [video,state] of previews) {
+    previewObserver.observe(video);
+    const card=video.closest('.project');
+    const engage=()=>{state.engaged=true;playPreview(video);};
+    const disengage=()=>{state.engaged=false;if(video.hasAttribute('src'))release(video);};
+    card.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')engage();});
+    card.addEventListener('pointerleave',disengage);
+    card.addEventListener('focusin',engage);
+    card.addEventListener('focusout',disengage);
+  }
 
   function updateDemos() {
     const candidates = !!document.querySelector('.bili-player[data-active="true"]') || onHome() || (!!document.querySelector('.detail-video') && !document.querySelector('.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
