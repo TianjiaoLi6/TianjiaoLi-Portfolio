@@ -30,7 +30,7 @@
   for (const [video] of previews) previewObserver.observe(video);
 
   function updateDemos() {
-    const candidates = onHome() || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
+    const candidates = onHome() || (!!document.querySelector('.detail-video') && !document.querySelector('.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
       .filter(([video,visible]) => visible && video.isConnected)
       .sort(([a],[b]) => Math.abs(a.getBoundingClientRect().top+a.clientHeight/2-innerHeight/2)-Math.abs(b.getBoundingClientRect().top+b.clientHeight/2-innerHeight/2))
       .slice(0,1).map(([video])=>video);
