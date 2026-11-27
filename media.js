@@ -30,7 +30,7 @@
   for (const [video] of previews) previewObserver.observe(video);
 
   function updateDemos() {
-    const candidates = onHome() || (!!document.querySelector('.detail-video') && !document.querySelector('.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
+    const candidates = !!document.querySelector('.bili-player[data-active="true"]') || onHome() || (!!document.querySelector('.detail-video') && !document.querySelector('.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
       .filter(([video,visible]) => visible && video.isConnected)
       .sort(([a],[b]) => Math.abs(a.getBoundingClientRect().top+a.clientHeight/2-innerHeight/2)-Math.abs(b.getBoundingClientRect().top+b.clientHeight/2-innerHeight/2))
       .slice(0,1).map(([video])=>video);
@@ -41,7 +41,31 @@
       video.play().catch(()=>{});
     }
   }
+  const biliVideos = ['BV1tb1xzEEKc','BV1M41xzSEBM','BV1xa1xzjEzu','BV1K81xzmE71','BV1rZ1szzERJ'];
+  function setupBilibili(video, bvid) {
+    const wrapper=document.createElement('div');wrapper.className='detail-player bili-player';
+    const poster=document.createElement('img');poster.className='detail-video bili-poster';poster.src=video.poster;poster.alt='完整作品视频封面';
+    const stage=document.createElement('div');stage.className='bili-stage';stage.append(poster);
+    const start=document.createElement('button');start.className='detail-start';start.type='button';start.textContent='播放完整视频 · B 站';stage.append(start);
+    const options=document.createElement('div');options.className='bili-options';
+    const stop=document.createElement('button');stop.type='button';stop.textContent='停止完整视频';stop.hidden=true;
+    const link=document.createElement('a');link.href='https://www.bilibili.com/video/'+bvid+'/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='在 B 站观看';options.append(stop,link);
+    video.replaceWith(wrapper);wrapper.append(stage,options);
+    const notify=active=>{wrapper.dataset.active=String(active);document.dispatchEvent(new CustomEvent('fullvideochange',{detail:{active}}));};
+    const end=()=>{stage.querySelector('iframe')?.remove();poster.hidden=false;start.hidden=false;stop.hidden=true;notify(false);};
+    wrapper.stopPlayback=end;
+    start.addEventListener('click',()=>{
+      document.querySelectorAll('video').forEach(v=>v.pause());
+      const frame=document.createElement('iframe');frame.className='bili-frame';frame.title='B站完整作品视频';frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;
+      frame.src='https://player.bilibili.com/player.html?bvid='+bvid+'&p=1&autoplay=1&danmaku=0';
+      poster.hidden=true;start.hidden=true;stop.hidden=false;stage.append(frame);notify(true);
+    });
+    stop.addEventListener('click',end);
+  }
+  document.addEventListener('play',e=>{if(e.target instanceof HTMLVideoElement && !e.target.classList.contains('detail-demo'))document.querySelector('.bili-player[data-active="true"]')?.stopPlayback();},true);
   function setupFullVideo(video) {
+    const bvid=biliVideos[Number(location.hash.split('-')[1])-1];
+    if(bvid){setupBilibili(video,bvid);return;}
     const wrapper = document.createElement('div');
     wrapper.className = 'detail-player';
     video.before(wrapper);
@@ -214,6 +238,7 @@
   addEventListener('hashchange',routeMedia);
   document.addEventListener('visibilitychange',visibility);
   document.addEventListener('viewerchange',visibility);
+  document.addEventListener('fullvideochange',updateDemos);
   reduced.addEventListener('change',visibility);
   routeMedia();
 })();

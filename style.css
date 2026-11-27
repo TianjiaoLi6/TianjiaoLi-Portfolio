@@ -87,3 +87,5 @@ body.dark{--line:#595652}
 
 /* Floating player grip and detail-page scroll-to-top control. */
 .floating-drag{display:none}.floating-player .floating-drag{display:flex;width:100%;height:26px;align-items:center;justify-content:center;padding:0;margin:0 0 5px;color:var(--muted);cursor:grab;touch-action:none;user-select:none}.floating-drag span{font-size:25px;line-height:1;transform:rotate(90deg)}.floating-player .floating-drag.dragging{cursor:grabbing;color:var(--ink)}.detail-bottom{width:48px;height:48px;border-radius:50%;padding:0;display:grid;place-items:center;font-size:26px;line-height:1}.detail-bottom[hidden]{display:none}
+
+.bili-stage{position:relative;aspect-ratio:16/9;background:#101115}.bili-frame{display:block;width:100%;height:100%;border:0;position:absolute;inset:0}.bili-poster{object-fit:contain}.bili-poster[hidden]{display:none}.bili-options{display:flex;justify-content:flex-end;align-items:center;gap:16px;padding:12px;font-size:14px;color:var(--muted)}.bili-options button{border:1px solid var(--line);border-radius:99px;padding:6px 12px}.bili-options button[hidden]{display:none}.floating-player .bili-options{padding:6px;font-size:12px}
