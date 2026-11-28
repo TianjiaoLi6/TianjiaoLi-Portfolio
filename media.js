@@ -34,7 +34,7 @@
 
 
   function updateDemos() {
-    const candidates = !!document.querySelector('.bili-player[data-active="true"]') || onHome() || (!!document.querySelector('.detail-video') && !document.querySelector('.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
+    const candidates = !!document.querySelector('.bili-player[data-active="true"]') || onHome() || (!!document.querySelector('video.detail-video') && !document.querySelector('video.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
       .filter(([video,visible]) => visible && video.isConnected)
       .sort(([a],[b]) => Math.abs(a.getBoundingClientRect().top+a.clientHeight/2-innerHeight/2)-Math.abs(b.getBoundingClientRect().top+b.clientHeight/2-innerHeight/2))
       .slice(0,1).map(([video])=>video);
@@ -221,7 +221,7 @@
       else playPreview(video);
     }
     if (onHome()) return;
-    const fullVideo = document.querySelector('.detail-video');
+    const fullVideo = document.querySelector('video.detail-video');
     if(fullVideo) setupFullVideo(fullVideo);
     demoObserver = new IntersectionObserver(entries => {
       for (const entry of entries) {
