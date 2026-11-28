@@ -1,9 +1,11 @@
 (() => {
-  const previews = new Map([...document.querySelectorAll('.project-preview')].map(video => [video, {visible:false,engaged:false}]));
+  const previews = new Map([...document.querySelectorAll('.project-preview')].map(video => [video, {visible:false}]));
   const players = new Map(), demos = new Map();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const onHome = () => !document.querySelector('#home-page').hidden;
   let demoObserver;
+  let previewsReady=false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{previewsReady=true;for(const [video] of previews)playPreview(video);}));
   const release = video => {
     video.pause();
     players.get(video)?.destroy();
@@ -12,12 +14,13 @@
     video.load();
   };
   function playPreview(video) {
-    const wanted = onHome() && previews.get(video).visible && previews.get(video).engaged && !document.hidden && !document.querySelector('.media-viewer[open]') && !reduced.matches;
+    const wanted = previewsReady && onHome() && previews.get(video).visible && !document.hidden && !document.querySelector('.media-viewer[open]') && !reduced.matches;
     if (!wanted) { video.pause(); return; }
     if (!video.getAttribute('src')) {
       video.muted = true;
       video.loop = true;
-      video.src = video.dataset.previewBase + Math.floor(Math.random()*4) + '.mp4';
+      video.dataset.previewSource ||= video.dataset.previewBase + Math.floor(Math.random()*4) + '.mp4';
+      video.src = video.dataset.previewSource;
     }
     video.play().catch(()=>{});
   }
@@ -27,16 +30,8 @@
       playPreview(entry.target);
     }
   }, {rootMargin:'120px 0px'});
-  for (const [video,state] of previews) {
-    previewObserver.observe(video);
-    const card=video.closest('.project');
-    const engage=()=>{state.engaged=true;playPreview(video);};
-    const disengage=()=>{state.engaged=false;if(video.hasAttribute('src'))release(video);};
-    card.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')engage();});
-    card.addEventListener('pointerleave',disengage);
-    card.addEventListener('focusin',engage);
-    card.addEventListener('focusout',disengage);
-  }
+  for (const [video] of previews) previewObserver.observe(video);
+
 
   function updateDemos() {
     const candidates = !!document.querySelector('.bili-player[data-active="true"]') || onHome() || (!!document.querySelector('.detail-video') && !document.querySelector('.detail-video').paused) || document.hidden || document.querySelector('.media-viewer[open]') || reduced.matches ? [] : [...demos]
