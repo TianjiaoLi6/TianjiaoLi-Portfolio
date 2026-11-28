@@ -1,7 +1,7 @@
 // Warm only the nearest upcoming clip, preserving the original media quality.
 (()=>{
  let videos=[],pending=false;
- function source(v){return v.dataset.demo||v.dataset.caseSrc||(v.closest('.bsa-player')?.dataset.base? v.closest('.bsa-player').dataset.base+'-480.mp4':'');}
+ function source(v){return v.dataset.demo||v.dataset.caseSrc||(v.closest('.bsa-player')?.dataset.base? v.closest('.bsa-player').dataset.base+'-480.mp4?v=20261128':'');}
  function ahead(v){for(let i=0;i<v.buffered.length;i++)if(v.buffered.start(i)<=v.currentTime+.1&&v.buffered.end(i)>v.currentTime)return v.buffered.end(i)-v.currentTime;return 0;}
  function update(){pending=false;if(document.hidden||document.querySelector('#home-page')?.hidden===false)return;
  const busy=!!document.querySelector('.bili-player[data-active="true"],.media-viewer[open]')||videos.some(v=>!v.paused);

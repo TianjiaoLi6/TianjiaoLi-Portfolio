@@ -19,7 +19,7 @@
     if (!video.getAttribute('src')) {
       video.muted = true;
       video.loop = true;
-      video.dataset.previewSource ||= video.dataset.previewBase + Math.floor(Math.random()*4) + '.mp4';
+      video.dataset.previewSource ||= video.dataset.previewBase + Math.floor(Math.random()*4) + '.mp4?v=20261128';
       video.src = video.dataset.previewSource;
     }
     video.play().catch(()=>{});
